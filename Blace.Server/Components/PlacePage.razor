@@ -1,4 +1,5 @@
 @page "/"
+@using Blace.Client
 @using Blace.Client.Components
 
-<Place />
+<Place @rendermode="@RenderModesWithoutPrerendering.InteractiveWebAssemblyWithoutPrerendering" />

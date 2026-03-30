@@ -3,8 +3,9 @@
 public class Delete
 {
     public int Id { get; set; }
-    public DateTime DateTimeUtc { get; init; }
     public int UserId { get; init; }
+    public DateTime DateTimeUtc { get; init; }
 
     public User User { get; set; } = null!;
+    public List<Tile> Tiles { get; } = [];
 }

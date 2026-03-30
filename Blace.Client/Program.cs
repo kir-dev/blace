@@ -17,7 +17,6 @@ try
     builder.Services.AddAuthorizationCore();
     builder.Services.AddCascadingAuthenticationState();
     builder.Services.AddAuthenticationStateDeserialization();
-    builder.Services.AddScoped(_ => new HttpClient { BaseAddress = new(builder.HostEnvironment.BaseAddress) });
     builder.Services.AddSingleton<HubService>();
     builder.Services.AddSingleton(s => s.GetRequiredService<HubService>().Server);
     builder.Services.AddSingleton<EventService>();

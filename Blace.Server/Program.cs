@@ -1,9 +1,11 @@
 using Blace.Server;
 using Blace.Server.Data;
 using Blace.Server.Services;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
+using Microsoft.Net.Http.Headers;
 using Sentry.AspNetCore;
 using Constants = Blace.Server.Constants;
 
@@ -22,9 +24,9 @@ builder.Services.AddPooledDbContextFactory<Db>(db =>
 
 builder.Services.AddSingleton<IPlaceRepository, EfPlaceRepository>();
 
+builder.Services.AddScoped<UserInfoService>();
 builder.Services.AddSingleton<PlaceService>();
 builder.Services.AddSingleton<PlayerService>();
-builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
 builder.Services
     .AddSignalR(o => o.MaximumReceiveMessageSize = null)
@@ -41,8 +43,71 @@ if (builder.Configuration["Sentry:Dsn"] != null)
         (Action<SentryAspNetCoreOptions>)builder.Configuration.GetSection("Sentry").Bind);
 }
 
+// Authentication
+builder.Services.AddAuthentication(options =>
+    {
+        // Sign in using AuthSCH
+        options.DefaultChallengeScheme = Constants.AuthSchAuthenticationScheme;
+
+        // Store the user's identity in a cookie
+        options.DefaultScheme = Constants.CookieAuthenticationScheme;
+    })
+    .AddCookie(Constants.CookieAuthenticationScheme, options => options.Cookie.Name = "User")
+    .AddOpenIdConnect(Constants.AuthSchAuthenticationScheme, options =>
+    {
+        options.Authority = "https://auth.sch.bme.hu";
+
+        options.ClientId = builder.Configuration["AuthSch:ClientId"];
+        options.ClientSecret = builder.Configuration["AuthSch:ClientSecret"];
+
+        options.Scope.Clear();
+        options.Scope.Add("openid");
+        options.Scope.Add("offline_access");
+        options.Scope.Add("pek.sch.bme.hu:profile");
+        options.Scope.Add("email");
+        // To retrieve a claim only available through the AuthSCH user info endpoint
+        // (https://git.sch.bme.hu/kszk/authsch/-/wikis/api#a-userinfo-endpoint),
+        // add its corresponding scope here, then map the claim in UserInfoService.
+
+        options.ResponseType = "code";
+        options.ResponseMode = "query";
+        options.TokenValidationParameters.NameClaimType = "name";
+        options.TokenValidationParameters.RoleClaimType = "roles";
+
+        options.GetClaimsFromUserInfoEndpoint = true;
+        options.MapInboundClaims = false; // Disable messing with claim names
+    });
+builder.Services.AddCascadingAuthenticationState();
+
+// After the user logs in, we receive an Authorization Code from AuthSCH, which is then automatically redeemed
+// by ASP.NET for an access token, an ID token and a refresh token.
+// These are then stored in the user's cookie (`options.SaveTokens = true`).
+//
+// As the ID token does not contain things like group memberships, the AuthSCH UserInfo endpoint is queried using the
+// access token (`options.GetClaimsFromUserInfoEndpoint = true`).
+// The UserInfo endpoint returns JSON data, as documented on the AuthSCH wiki.
+//
+// In the below code, we hook into the UserInformationReceived event to set the "memberships" claim for the user.
+string publicUrl = builder.Configuration["StartSch:PublicUrl"]!;
+string userAgent = $"StartSCHBot/1.0 (+{publicUrl})";
+builder.Services.AddOptions<OpenIdConnectOptions>(Constants.AuthSchAuthenticationScheme)
+    .PostConfigure(((OpenIdConnectOptions options, IServiceProvider serviceProvider) =>
+    {
+        options.Events.OnUserInformationReceived = async context =>
+        {
+            await using var scope = serviceProvider.CreateAsyncScope();
+            await scope.ServiceProvider
+                .GetRequiredService<UserInfoService>()
+                .OnUserInformationReceived(context);
+        };
+
+        options.Backchannel.DefaultRequestHeaders.Add(HeaderNames.UserAgent, userAgent);
+    }));
+
+
 // TODO: AUTH
 builder.Services.AddAuthorization(o => o.AddPolicy(Constants.AdminPolicy, p => p.RequireAssertion(_ => true)));
+
 
 WebApplication app = builder.Build();
 
@@ -65,7 +130,6 @@ else
 app.UseStaticFiles();
 app.UseRouting();
 app.UseRequestLocalization();
-app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();

@@ -32,15 +32,17 @@ namespace Blace.Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "User",
+                name: "Users",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    IsBanned = table.Column<bool>(type: "boolean", nullable: false),
+                    AuthSchId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_User", x => x.Id);
+                    table.PrimaryKey("PK_Users", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -49,16 +51,16 @@ namespace Blace.Server.Migrations
                 {
                     Id = table.Column<int>(type: "integer", maxLength: 450, nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    DateTimeUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UserId = table.Column<int>(type: "integer", nullable: false)
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    DateTimeUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Deletes", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Deletes_User_UserId",
+                        name: "FK_Deletes_Users_UserId",
                         column: x => x.UserId,
-                        principalTable: "User",
+                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -86,6 +88,12 @@ namespace Blace.Server.Migrations
                         column: x => x.DeleteId,
                         principalTable: "Deletes",
                         principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Tiles_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Tiles_places_PlaceId",
                         column: x => x.PlaceId,
@@ -118,6 +126,11 @@ namespace Blace.Server.Migrations
                 name: "IX_Tiles_PlaceId_X_Y",
                 table: "Tiles",
                 columns: new[] { "PlaceId", "X", "Y" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tiles_UserId",
+                table: "Tiles",
+                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -133,7 +146,7 @@ namespace Blace.Server.Migrations
                 name: "places");
 
             migrationBuilder.DropTable(
-                name: "User");
+                name: "Users");
         }
     }
 }

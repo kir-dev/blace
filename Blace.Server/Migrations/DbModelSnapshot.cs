@@ -119,6 +119,8 @@ namespace Blace.Server.Migrations
 
                     b.HasIndex("PlaceId");
 
+                    b.HasIndex("UserId");
+
                     b.HasIndex("PlaceId", "UserId");
 
                     b.HasIndex("PlaceId", "X", "Y");
@@ -134,9 +136,15 @@ namespace Blace.Server.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<Guid>("AuthSchId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsBanned")
+                        .HasColumnType("boolean");
+
                     b.HasKey("Id");
 
-                    b.ToTable("User");
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Blace.Shared.Models.Place", b =>
@@ -158,7 +166,7 @@ namespace Blace.Server.Migrations
             modelBuilder.Entity("Blace.Shared.Models.Delete", b =>
                 {
                     b.HasOne("Blace.Shared.Models.User", "User")
-                        .WithMany()
+                        .WithMany("Deletes")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -169,18 +177,43 @@ namespace Blace.Server.Migrations
             modelBuilder.Entity("Blace.Shared.Models.Tile", b =>
                 {
                     b.HasOne("Blace.Shared.Models.Delete", "Delete")
-                        .WithMany()
+                        .WithMany("Tiles")
                         .HasForeignKey("DeleteId");
 
                     b.HasOne("Blace.Shared.Models.Place", "Place")
-                        .WithMany()
+                        .WithMany("Tiles")
                         .HasForeignKey("PlaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Blace.Shared.Models.User", "User")
+                        .WithMany("Tiles")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Delete");
 
                     b.Navigation("Place");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Blace.Shared.Models.Delete", b =>
+                {
+                    b.Navigation("Tiles");
+                });
+
+            modelBuilder.Entity("Blace.Shared.Models.User", b =>
+                {
+                    b.Navigation("Deletes");
+
+                    b.Navigation("Tiles");
+                });
+
+            modelBuilder.Entity("Blace.Shared.Models.Place", b =>
+                {
+                    b.Navigation("Tiles");
                 });
 #pragma warning restore 612, 618
         }

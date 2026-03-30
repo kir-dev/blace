@@ -13,7 +13,7 @@ public class HubService
         _serviceProvider = serviceProvider;
         Connection = new HubConnectionBuilder()
             .WithUrl(
-                GetServerAddress(env) + "Game",
+                env.BaseAddress + "Game",
                 o => o.AccessTokenProvider = () => Task.FromResult(UserId.ToString())!)
             .AddMessagePackProtocol()
             .WithAutomaticReconnect()
@@ -37,13 +37,6 @@ public class HubService
     // ReSharper disable once RedundantTypeArgumentsOfMethod
     public IDisposable RegisterClient(IClient client) => Connection.RegisterClient<IClient>(client);
 #pragma warning restore IDE0001
-
-    private static string GetServerAddress(IWebAssemblyHostEnvironment env) =>
-        !env.IsDevelopment()
-            ? "https://blace-server.azurewebsites.net/"
-            : env.BaseAddress.Contains("7150")
-                ? env.BaseAddress.Replace("7150", "7151")
-                : throw new($"Couldn't resolve address of server for base address {env.BaseAddress}");
 }
 
 [AttributeUsage(AttributeTargets.Method)]

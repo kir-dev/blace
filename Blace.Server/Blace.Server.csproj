@@ -11,6 +11,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Blace.Client\Blace.Client.csproj" />
         <ProjectReference Include="..\Blace.Shared\Blace.Shared.csproj" />
+        <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="10.0.1" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.1" />
         <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="10.0.1" />

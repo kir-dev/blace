@@ -8,6 +8,7 @@ public class Db(DbContextOptions<Db> options) : DbContext(options)
     public DbSet<Place> Places { get; set; } = null!;
     public DbSet<Tile> Tiles { get; set; } = null!;
     public DbSet<Delete> Deletes { get; set; } = null!;
+    public DbSet<User> Users { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
