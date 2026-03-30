@@ -1,6 +1,8 @@
 using Blace.Server;
+using Blace.Server.Data;
 using Blace.Server.Services;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
 using Sentry.AspNetCore;
 using Constants = Blace.Server.Constants;
@@ -11,12 +13,25 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddCors();
 
-string? connectionString = builder.Configuration["CosmosDb:ConnectionString"];
-if (connectionString != null)
+if (builder.Configuration.GetConnectionString("Postgres") is { } postgresConnectionString)
+{
+    builder.Services.AddPooledDbContextFactory<Db>(db =>
+    {
+        db.UseNpgsql(postgresConnectionString);
+
+        if (builder.Environment.IsDevelopment())
+            db.EnableSensitiveDataLogging();
+    });
+
+    builder.Services.AddScoped<Db>(sp => sp.GetRequiredService<IDbContextFactory<Db>>().CreateDbContext());
+
+    builder.Services.AddSingleton<IPlaceRepository, Db>();
+}
+else if (builder.Configuration["CosmosDb:ConnectionString"] is { } cosmosDbConnectionString)
 {
     try
     {
-        CosmosDbPlaceRepository repository = new(connectionString);
+        CosmosDbPlaceRepository repository = new(cosmosDbConnectionString);
         await repository.Initialize();
         builder.Services.AddSingleton<IPlaceRepository>(repository);
     }
@@ -26,8 +41,10 @@ if (connectionString != null)
         builder.Services.AddSingleton<IPlaceRepository, InMemoryPlaceRepository>();
     }
 }
-else 
+else
+{
     builder.Services.AddSingleton<IPlaceRepository, InMemoryPlaceRepository>();
+}
 
 builder.Services.AddSingleton<PlaceService>();
 builder.Services.AddSingleton<PlayerService>();
