@@ -2,6 +2,7 @@
 
 namespace Blace.Client.Services;
 
+/// Handles global JS events
 public class EventService
 {
     public EventService()

@@ -10,23 +10,23 @@
         Start
         <div class="d-flex justify-content-center gap-2 mb-2">
             <div class="btn-group">
-                <button @onclick="() => Start -= 40" class="btn btn-primary">-40</button>
-                <button @onclick="() => Start -= 10" class="btn btn-primary">-10</button>
-                <button @onclick="() => Start--" class="btn btn-primary">-</button>
-                <button @onclick="() => Start++" class="btn btn-primary">+</button>
-                <button @onclick="() => Start += 10" class="btn btn-primary">+10</button>
-                <button @onclick="() => Start += 40" class="btn btn-primary">+40</button>
+                <button @onclick="@(() => Start -= 40)" class="btn btn-primary">-40</button>
+                <button @onclick="@(() => Start -= 10)" class="btn btn-primary">-10</button>
+                <button @onclick="@(() => Start--)" class="btn btn-primary">-</button>
+                <button @onclick="@(() => Start++)" class="btn btn-primary">+</button>
+                <button @onclick="@(() => Start += 10)" class="btn btn-primary">+10</button>
+                <button @onclick="@(() => Start += 40)" class="btn btn-primary">+40</button>
             </div>
         </div>
         End
         <div class="d-flex justify-content-center gap-2 mb-2">
             <div class="btn-group">
-                <button @onclick="() => End -= 40" class="btn btn-primary">-40</button>
-                <button @onclick="() => End -= 10" class="btn btn-primary">-10</button>
-                <button @onclick="() => End--" class="btn btn-primary">-</button>
-                <button @onclick="() => End++" class="btn btn-primary">+</button>
-                <button @onclick="() => End += 10" class="btn btn-primary">+10</button>
-                <button @onclick="() => End += 40" class="btn btn-primary">+40</button>
+                <button @onclick="@(() => End -= 40)" class="btn btn-primary">-40</button>
+                <button @onclick="@(() => End -= 10)" class="btn btn-primary">-10</button>
+                <button @onclick="@(() => End--)" class="btn btn-primary">-</button>
+                <button @onclick="@(() => End++)" class="btn btn-primary">+</button>
+                <button @onclick="@(() => End += 10)" class="btn btn-primary">+10</button>
+                <button @onclick="@(() => End += 40)" class="btn btn-primary">+40</button>
             </div>
         </div>
         @_start-@_end/@_tiles.Length
@@ -34,11 +34,11 @@
 }
 
 <div class="d-flex justify-content-center gap-2">
-    <button class="btn btn-danger align-self-start" disabled="@(_end <= _start)" @onclick="Delete">
+    <button class="btn btn-danger align-self-start" disabled="@(_end <= _start)" @onclick="@Delete">
         <span class="oi oi-trash"></span>
     </button>
-    <CloseButton OnClose="() => { End = 0; _tiles = null; }"/>
-    <button class="btn btn-primary" @onclick="Update">
+    <CloseButton OnClose="@(() => { End = 0; _tiles = null; })"/>
+    <button class="btn btn-primary" @onclick="@Update">
         <span class="oi oi-magnifying-glass"></span>
     </button>
 </div>
