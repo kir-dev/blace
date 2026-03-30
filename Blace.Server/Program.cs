@@ -23,9 +23,7 @@ if (builder.Configuration.GetConnectionString("Postgres") is { } postgresConnect
             db.EnableSensitiveDataLogging();
     });
 
-    builder.Services.AddScoped<Db>(sp => sp.GetRequiredService<IDbContextFactory<Db>>().CreateDbContext());
-
-    builder.Services.AddSingleton<IPlaceRepository, Db>();
+    builder.Services.AddSingleton<IPlaceRepository, EfPlaceRepository>();
 }
 else if (builder.Configuration["CosmosDb:ConnectionString"] is { } cosmosDbConnectionString)
 {
@@ -77,6 +75,11 @@ else
 
 WebApplication app = builder.Build();
 
+{
+    var repository = app.Services.GetService<IPlaceRepository>();
+    if (repository is EfPlaceRepository efPlaceRepository)
+        await efPlaceRepository.Initialize();
+}
 await app.Services.GetRequiredService<PlaceService>().Initialize();
 
 app.UseCors(cors => cors
