@@ -1,7 +1,6 @@
 using Blazored.LocalStorage;
 using Blace.Client;
 using Blace.Client.Services;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 try
@@ -15,16 +14,16 @@ try
         SentrySdk.Init(sentryOptions);
     }
 
-    builder.RootComponents.Add<App>("#app");
-    builder.RootComponents.Add<HeadOutlet>("head::after");
-
+    builder.Services.AddAuthorizationCore();
+    builder.Services.AddCascadingAuthenticationState();
+    builder.Services.AddAuthenticationStateDeserialization();
     builder.Services.AddScoped(_ => new HttpClient { BaseAddress = new(builder.HostEnvironment.BaseAddress) });
     builder.Services.AddSingleton<HubService>();
     builder.Services.AddSingleton(s => s.GetRequiredService<HubService>().Server);
     builder.Services.AddSingleton<EventService>();
-    builder.Services.AddHubClient<CooldownService>();
-    builder.Services.AddHubClient<PlaceService>();
-    builder.Services.AddHubClient<PlayerService>();
+    builder.Services.AddHubClientSingleton<CooldownService>();
+    builder.Services.AddHubClientSingleton<PlaceService>();
+    builder.Services.AddHubClientSingleton<PlayerService>();
     builder.Services.AddBlazoredLocalStorageAsSingleton();
 
     builder.Logging.AddSentry(o => o.InitializeSdk = false);

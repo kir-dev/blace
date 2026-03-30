@@ -1,13 +1,42 @@
-﻿<CascadingAuthenticationState>
-    <AuthorizeView Policy="@Constants.AdminPolicy">
-        <PageTitle>Blace.Server</PageTitle>
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <base href="/"/>
+    <title>StartSCH</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="@Assets["apple-touch-icon.png"]">
+    <link rel="icon" type="image/png" sizes="32x32" href="@Assets["favicon-32x32.png"]">
+    <link rel="icon" type="image/png" sizes="16x16" href="@Assets["favicon-16x16.png"]">
+    <link rel="manifest" href="@Assets["site.webmanifest"]">
 
-        <div class="page">
-            <main>
-                <article class="content px-4">
-                    <PlaceManagerPage />
-                </article>
-            </main>
-        </div>
-    </AuthorizeView>
-</CascadingAuthenticationState>
+    <link rel="stylesheet" href="@Assets["css/app.css"]"/>
+    <link rel="stylesheet" href="@Assets["StartSch.styles.css"]"/> @* Blazor isolated CSS *@
+        
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        
+    <HeadOutlet/>
+</head>
+<body>
+<Router AppAssembly="typeof(Program).Assembly">
+    <Found Context="routeData">
+        <AuthorizeRouteView
+            Resource="@routeData"
+            RouteData="@routeData"
+        />
+    </Found>
+</Router>
+        
+<script src="@Assets["_framework/blazor.web.js"]" async></script>
+<script>
+    document.addEventListener('keydown', function (e){
+        DotNet.invokeMethod('Blace.Client', 'OnKeyDown', e.key);
+    });
+
+    document.getElementById('app').addEventListener('wheel', function (e){
+        e.preventDefault();
+    });
+</script>
+</body>
+</html>

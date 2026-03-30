@@ -5,6 +5,10 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+        <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+
         <!-- https://github.com/mono/SkiaSharp/issues/3422#issuecomment-3983915298 -->
         <RunAOTCompilation>false</RunAOTCompilation>
     </PropertyGroup>
@@ -12,10 +16,11 @@
     <ItemGroup>
         <PackageReference Include="Blazored.LocalStorage" Version="4.5.0"/>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.5"/>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.5" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="10.0.5" />
         <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.5"/>
         <PackageReference Include="Microsoft.AspNetCore.SignalR.Client.SourceGenerator" Version="7.0.0-preview.1.22109.13"/>
         <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="10.0.5"/>
+        <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.1" />
         <PackageReference Include="Sentry.Extensions.Logging" Version="6.3.0"/>
         <!-- https://github.com/mono/SkiaSharp/issues/3422#issuecomment-3983915298 -->
         <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" Version="3.119.2"/>

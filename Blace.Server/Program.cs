@@ -9,10 +9,6 @@ using Constants = Blace.Server.Constants;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddRazorPages();
-builder.Services.AddServerSideBlazor();
-builder.Services.AddCors();
-
 var postgresConnectionString = builder.Configuration.GetConnectionString("Postgres");
 if (postgresConnectionString == null)
     throw new("ConnectionStrings:Postgres not set.");
@@ -34,6 +30,11 @@ builder.Services
     .AddSignalR(o => o.MaximumReceiveMessageSize = null)
     .AddMessagePackProtocol();
 
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents()
+    .AddInteractiveWebAssemblyComponents()
+    .AddAuthenticationStateSerialization();
+
 if (builder.Configuration["Sentry:Dsn"] != null)
 {
     builder.WebHost.UseSentry(
@@ -52,31 +53,29 @@ WebApplication app = builder.Build();
 }
 await app.Services.GetRequiredService<PlaceService>().Initialize();
 
-app.UseCors(cors => cors
-    .AllowAnyOrigin()
-    .AllowAnyMethod()
-    .AllowAnyHeader());
-
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
+    app.UseWebAssemblyDebugging();
+else
 {
-    app.UseExceptionHandler("/Error");
+    app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
     app.UseHttpsRedirection();
 }
 
 app.UseStaticFiles();
-
 app.UseRouting();
+app.UseRequestLocalization();
+app.UseCors();
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseAntiforgery();
 
-if (!app.Environment.IsDevelopment())
-{
-    app.UseAuthentication();
-    app.UseAuthorization();
-}
-
+app.MapStaticAssets();
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode()
+    .AddInteractiveWebAssemblyRenderMode()
+    .AddAdditionalAssemblies(typeof(Blace.Client._Imports).Assembly);
 app.MapBlazorHub();
-app.MapFallbackToPage("/_Host");
-
 app.MapHub<Server>("/Game");
 
-app.Run();
+await app.RunAsync();

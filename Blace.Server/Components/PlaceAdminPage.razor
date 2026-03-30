@@ -1,4 +1,5 @@
-﻿@page "/place"
+﻿@page "/admin"
+@attribute [Authorize(Constants.AdminPolicy)]
 @using Blace.Shared.Models
 @inject PlaceService PlaceService
 @inject IPlaceRepository PlaceRepository
