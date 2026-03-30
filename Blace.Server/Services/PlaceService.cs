@@ -14,9 +14,9 @@ public class PlaceService
     private readonly Throttler _pixelsUpdater;
     private readonly ConcurrentQueue<(byte, byte)> _changedPixels = new();
     private readonly ConcurrentQueue<Tile> _tiles = new();
-    private readonly ConcurrentDictionary<Guid, byte> _bannedPlayers = new();
+    private readonly ConcurrentDictionary<int, byte> _bannedPlayers = new();
 
-    internal Guid AdminUserId { get; } = Guid.NewGuid();
+    internal static int AdminUserId => -1;
     public uint Cooldown { get; private set; }
     public Place Place { get; private set; } = null!;
 
@@ -53,21 +53,29 @@ public class PlaceService
             await CreateNewPlace();
     }
 
-    public async Task SetPlace(string id)
+    public async Task SetPlace(int id)
     {
         if (Place?.Id == id) return;
         await SetPlace(await _placeRepository.Get(id));
     }
 
-    public void SetPixel(int x, int y, byte color, Guid userId)
+    public void SetPixel(int x, int y, byte color, int userId)
     {
         if (_bannedPlayers.ContainsKey(userId)) return;
         if (color >> 4 != 0) throw new InvalidOperationException();
 
         CanvasSetColor(x, y, color, out byte previousColor);
         _changedPixels.Enqueue(((byte)x, (byte)y));
-        _tiles.Enqueue(new(Guid.NewGuid().ToString(), DateTime.UtcNow, Place.Id, userId, (ushort)x, (ushort)y, color,
-            previousColor));
+        _tiles.Enqueue(new()
+        {
+            CreatedTimeUtc = DateTime.UtcNow,
+            PlaceId = Place.Id,
+            UserId = userId,
+            X = (ushort)x,
+            Y = (ushort)y,
+            Color = color,
+            PreviousColor = previousColor,
+        });
         _canvasUpdater.Update();
         _pixelsUpdater.Update();
     }
@@ -87,12 +95,15 @@ public class PlaceService
     public async Task CreateNewPlace()
     {
         await SetPlace(
-            new Place(
-                Guid.NewGuid().ToString(),
-                "",
-                DateTime.UtcNow,
-                DateTime.UtcNow,
-                new byte[64 * 128]));
+            new Place
+            {
+                Title = "",
+                CreatedTimeUtc = DateTime.UtcNow,
+                LastChangeTimeUtc = DateTime.UtcNow,
+                Height = 128,
+                Width = 128,
+                Canvas = new byte[64 * 128],
+            });
         _placeRepository.Places.Insert(0, Place);
     }
 
@@ -125,7 +136,7 @@ public class PlaceService
 
     public async Task DeleteTiles(Tile[] tiles)
     {
-        Guid userId = tiles[0].UserId;
+        int userId = tiles[0].UserId;
         _bannedPlayers[userId] = 0;
         await _placeRepository.DeleteTiles(tiles);
         foreach (Tile tile in tiles)

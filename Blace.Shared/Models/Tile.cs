@@ -1,19 +1,18 @@
-﻿using Newtonsoft.Json;
+﻿namespace Blace.Shared.Models;
 
-namespace Blace.Shared.Models;
-
-public record Tile(
-    string Id,
-    DateTime CreatedTimeUtc,
-    string PlaceId,
-    Guid UserId,
-    ushort X,
-    ushort Y,
-    byte Color,
-    byte PreviousColor)
+public class Tile
 {
-    [JsonProperty("id")]
-    public string Id { get; } = Id;
+    public int Id { get; set; }
     
-    public string? DeleteId { get; set; }
+    public int? DeleteId { get; set; }
+    public int PlaceId { get; init; }
+    public int UserId { get; init; }
+    public DateTime CreatedTimeUtc { get; init; }
+    public ushort X { get; init; }
+    public ushort Y { get; init; }
+    public byte Color { get; init; }
+    public byte PreviousColor { get; init; }
+    
+    public Delete? Delete { get; set; }
+    public Place Place { get; set; } = null!;
 }

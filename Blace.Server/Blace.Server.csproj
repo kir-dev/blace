@@ -10,7 +10,6 @@
     <ItemGroup>
         <ProjectReference Include="..\Blace.Shared\Blace.Shared.csproj" />
         <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="10.0.5" />
-        <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.58.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.5">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

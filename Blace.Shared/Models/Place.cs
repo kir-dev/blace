@@ -1,15 +1,8 @@
 ﻿namespace Blace.Shared.Models;
 
-public record Place(
-        string Id,
-        string Title,
-        DateTime CreatedTimeUtc,
-        DateTime LastChangeTimeUtc,
-        byte[]? Canvas,
-        int Height = 128,
-        int Width = 128)
-    : PlaceInfo(Id, Title, CreatedTimeUtc, LastChangeTimeUtc)
+public class Place : PlaceInfo
 {
-    public int Height { get; set; } = Height;
-    public int Width { get; set; } = Width;
+    public int Height { get; set; }
+    public int Width { get; set; }
+    public byte[]? Canvas { get; init; }
 }

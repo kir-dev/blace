@@ -29,7 +29,7 @@ public static class Timelapse
         int i = 0;
         foreach (Tile tile in tiles)
         {
-            if (tile.PlaceId != "fa30bf1a-83c7-4bd2-aa97-b450404f8140" || tile.DeleteId != null) continue;
+            if (tile.PlaceId != 676767 || tile.DeleteId != null) continue;
             byte color = tile.Color;
             if (color > colors.Length - 1) color = color.GetNibble(0);
             arr[128 * tile.Y + tile.X] = colors[color];

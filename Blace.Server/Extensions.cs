@@ -4,6 +4,6 @@ namespace Blace.Server;
 
 public static class Extensions
 {
-    public static Guid GetId(this HubCallerContext context)
-        => Guid.ParseExact(context.UserIdentifier ?? throw new("UserId is null"), "D");
+    public static int GetId(this HubCallerContext context)
+        => int.Parse(context.UserIdentifier ?? throw new("UserId is null"));
 }

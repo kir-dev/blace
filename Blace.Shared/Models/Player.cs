@@ -1,8 +1,9 @@
 ﻿namespace Blace.Shared.Models;
 
-public record Player(Guid Id)
+public class Player
 {
-    public string? Name { get; set; } = null!;
+    public int Id { get; set; }
+    public string? Name { get; set; }
     public DateTimeOffset JoinTime { get; } = DateTimeOffset.UtcNow;
     public int Score { get; set; }
     public bool IsHidden { get; set; }

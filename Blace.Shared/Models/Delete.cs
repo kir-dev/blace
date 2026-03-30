@@ -1,9 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿namespace Blace.Shared.Models;
 
-namespace Blace.Shared.Models;
-
-public record Delete(string Id, DateTime DateTimeUtc, Guid UserId)
+public class Delete
 {
-    [JsonProperty("id")]
-    public string Id { get; } = Id;
+    public int Id { get; set; }
+    public DateTime DateTimeUtc { get; init; }
+    public int UserId { get; init; }
+
+    public User User { get; set; } = null!;
 }

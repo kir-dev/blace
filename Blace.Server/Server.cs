@@ -1,37 +1,20 @@
 ﻿using Blace.Server.Services;
 using Blace.Shared;
 using Blace.Shared.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using Sentry;
 
 namespace Blace.Server;
 
-public class Server : Hub<IClient>, IServer
+public class Server(
+    PlayerService playerService,
+    PlaceService placeService
+)
+    : Hub<IClient>, IServer
 {
-    private readonly PlayerService _playerService;
-    private readonly PlaceService _placeService;
-    private readonly StateService _stateService;
-    private readonly QuestionService _questionService;
-    private readonly VoteService _voteService;
-
-    public Server(
-        PlayerService playerService,
-        PlaceService placeService,
-        StateService stateService,
-        QuestionService questionService, VoteService voteService)
-    {
-        _playerService = playerService;
-        _placeService = placeService;
-        _stateService = stateService;
-        _questionService = questionService;
-        _voteService = voteService;
-    }
-
     public override Task OnConnectedAsync()
     {
-        _playerService[Context].IsConnected = true;
-        _playerService.Update();
+        playerService[Context].IsConnected = true;
+        playerService.Update();
         return base.OnConnectedAsync();
     }
 
@@ -39,25 +22,18 @@ public class Server : Hub<IClient>, IServer
     {
         if (exception != null)
             SentrySdk.CaptureException(exception);
-        _playerService[Context].IsConnected = false;
-        _playerService.Update();
+        playerService[Context].IsConnected = false;
+        playerService.Update();
         return Task.CompletedTask;
     }
 
-    public Task<State> GetState() => Task.FromResult(_stateService.State);
-    public Task<Player> GetMe() => Task.FromResult(_playerService[Context]);
-    public Task<Place> GetPlace() => Task.FromResult(_placeService.Place);
-    public Task<uint> GetCooldown() => Task.FromResult(_placeService.Cooldown);
+    public Task<Player> GetMe() => Task.FromResult(playerService[Context]);
+    public Task<Place> GetPlace() => Task.FromResult(placeService.Place);
+    public Task<uint> GetCooldown() => Task.FromResult(placeService.Cooldown);
 
     public Task PlaceTile(int x, int y, byte color)
     {
-        _placeService.SetPixel(x, y, color, Context.GetId());
-        return Task.CompletedTask;
-    }
-
-    public Task Vote(byte index)
-    {
-        _voteService.Vote(Context.GetId(), index);
+        placeService.SetPixel(x, y, color, Context.GetId());
         return Task.CompletedTask;
     }
 
@@ -65,7 +41,7 @@ public class Server : Hub<IClient>, IServer
     {
         try
         {
-            return await _placeService.GetTilesBySamePlayer(x, y, color);
+            return await placeService.GetTilesBySamePlayer(x, y, color);
         }
         catch (TileNotFoundException)
         {
@@ -75,21 +51,15 @@ public class Server : Hub<IClient>, IServer
 
     public async Task DeleteTiles(Tile[] tiles)
     {
-        if (_playerService[Context].Id != _placeService.AdminUserId)
+        if (playerService[Context].Id != PlaceService.AdminUserId)
             return;
-        await _placeService.DeleteTiles(tiles);
+        await placeService.DeleteTiles(tiles);
     }
 
     public Task SetName(string name)
     {
-        _playerService[Context].Name = name;
-        _playerService.Update();
-        return Task.CompletedTask;
-    }
-
-    public Task AnswerQuestion(bool isCorrect)
-    {
-        _questionService.AnswerQuestion(_playerService[Context], isCorrect);
+        playerService[Context].Name = name;
+        playerService.Update();
         return Task.CompletedTask;
     }
 }

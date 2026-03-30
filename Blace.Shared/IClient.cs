@@ -4,12 +4,8 @@ namespace Blace.Shared;
 
 public interface IClient
 {
-    Task UpdateQuestion(Question question);
-    Task ShowAnswer();
-    Task UpdatePlayers(List<Player> players);
-    Task UpdatePixels(Pixel[] pixels);
-    Task UpdatePlace(Place place);
-    Task UpdateCooldown(uint cooldown);
-    Task UpdateState(State state);
-    Task ShowVoteResult(int[] result);
+    Task UpdatePlayers(List<Player> players) => Task.CompletedTask;
+    Task UpdatePixels(Pixel[] pixels) => Task.CompletedTask;
+    Task UpdatePlace(Place place) => Task.CompletedTask;
+    Task UpdateCooldown(uint cooldown) => Task.CompletedTask;
 }

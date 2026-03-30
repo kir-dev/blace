@@ -20,7 +20,7 @@ public class EfPlaceRepository(IDbContextFactory<Db> dbContextFactory) : IPlaceR
             .ToListAsync();
     }
 
-    public async Task<Place> Get(string placeId)
+    public async Task<Place> Get(int placeId)
     {
         await using Db db = await dbContextFactory.CreateDbContextAsync();
         
@@ -90,7 +90,7 @@ public class EfPlaceRepository(IDbContextFactory<Db> dbContextFactory) : IPlaceR
         }
     }
 
-    public async Task<List<Tile>> GetTilesBySamePlayer(int x, int y, byte color, string placeId)
+    public async Task<List<Tile>> GetTilesBySamePlayer(int x, int y, byte color, int placeId)
     {
         await using Db db = await dbContextFactory.CreateDbContextAsync();
         
@@ -105,7 +105,7 @@ public class EfPlaceRepository(IDbContextFactory<Db> dbContextFactory) : IPlaceR
             throw new TileNotFoundException();
         }
 
-        Guid userId = lastTile.UserId;
+        int userId = lastTile.UserId;
 
         // Get all tiles by the same user in the same place that are not deleted
         List<Tile> tiles = await db.Tiles
@@ -122,8 +122,8 @@ public class EfPlaceRepository(IDbContextFactory<Db> dbContextFactory) : IPlaceR
 
         await using Db db = await dbContextFactory.CreateDbContextAsync();
 
-        Guid userId = tiles[0].UserId;
-        string placeId = tiles[0].PlaceId;
+        int userId = tiles[0].UserId;
+        int placeId = tiles[0].PlaceId;
 
         if (tiles.Any(t => t.UserId != userId || t.PlaceId != placeId))
         {
@@ -131,7 +131,11 @@ public class EfPlaceRepository(IDbContextFactory<Db> dbContextFactory) : IPlaceR
         }
 
         // Create a delete record
-        Delete delete = new(Guid.NewGuid().ToString(), DateTime.UtcNow, userId);
+        Delete delete = new()
+        {
+            DateTimeUtc = DateTime.UtcNow,
+            UserId = userId,
+        };
         await db.Deletes.AddAsync(delete);
 
         // Update all tiles with the delete ID (soft delete)

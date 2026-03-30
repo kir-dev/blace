@@ -1,5 +1,4 @@
-﻿using Blazored.LocalStorage;
-using Blace.Shared;
+﻿using Blace.Shared;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.SignalR.Client;
 
@@ -7,12 +6,10 @@ namespace Blace.Client.Services;
 
 public class HubService
 {
-    private readonly ILocalStorageService _localStorageService;
     private readonly IServiceProvider _serviceProvider;
     
-    public HubService(IWebAssemblyHostEnvironment env, ILocalStorageService localStorageService, IServiceProvider serviceProvider)
+    public HubService(IWebAssemblyHostEnvironment env, IServiceProvider serviceProvider)
     {
-        _localStorageService = localStorageService;
         _serviceProvider = serviceProvider;
         Connection = new HubConnectionBuilder()
             .WithUrl(
@@ -26,19 +23,13 @@ public class HubService
 
     private HubConnection Connection { get; }
     public IServer Server { get; }
-    public Guid UserId { get; private set; }
+    public int UserId { get; private set; }
 
     public async Task Start()
     {
         foreach (IClient client in _serviceProvider.GetRequiredService<IEnumerable<IClient>>())
             RegisterClient(client);
 
-        if (await _localStorageService.ContainKeyAsync("userid"))
-            UserId = await _localStorageService.GetItemAsync<Guid>("userid");
-        else
-            await _localStorageService.SetItemAsync(
-                "userid",
-                UserId = Guid.NewGuid());
         await Connection.StartAsync();
     }
 

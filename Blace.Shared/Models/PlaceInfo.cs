@@ -1,16 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿namespace Blace.Shared.Models;
 
-namespace Blace.Shared.Models;
-
-public record PlaceInfo(
-    string Id,
-    string Title,
-    DateTime CreatedTimeUtc,
-    DateTime LastChangeTimeUtc)
+public class PlaceInfo
 {
-    [JsonProperty("id")]
-    public string Id { get; } = Id;
-
-    public string Title { get; set; } = Title;
-    public DateTime LastChangeTimeUtc { get; set; } = LastChangeTimeUtc;
+    public int Id { get; set; }
+    public string Title { get; set; }
+    public DateTime LastChangeTimeUtc { get; set; }
+    public DateTime CreatedTimeUtc { get; init; }
 }

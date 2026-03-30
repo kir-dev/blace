@@ -42,15 +42,15 @@
 </style>
 
 <SKGLView
-    @ref="_view"
-    OnPaintSurface="OnPaintSurface"
-    IgnorePixelScaling="true"
-    EnableRenderLoop="true"
-    @onpointerdown="OnPointerDown"
-    @onpointermove="OnPointerMove"
-    @onpointerup="OnPointerUp"
-    @onpointerout="OnPointerUp"
-    @onwheel="OnWheel"/>
+    @ref="@_view"
+    OnPaintSurface="@OnPaintSurface"
+    IgnorePixelScaling="@true"
+    EnableRenderLoop="@true"
+    @onpointerdown="@OnPointerDown"
+    @onpointermove="@OnPointerMove"
+    @onpointerup="@OnPointerUp"
+    @onpointerout="@OnPointerUp"
+    @onwheel="@OnWheel"/>
 
 <Menu IsOpen="_openMenu == OpenMenu.Draw" CloseMenu="() => _openMenu = OpenMenu.None">
     <div class="d-flex justify-content-center flex-wrap gap-2">
