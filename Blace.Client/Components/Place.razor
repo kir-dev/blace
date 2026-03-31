@@ -52,7 +52,7 @@
     @onpointerout="@OnPointerUp"
     @onwheel="@OnWheel"/>
 
-<Menu IsOpen="_openMenu == OpenMenu.Draw" CloseMenu="() => _openMenu = OpenMenu.None">
+<Menu IsOpen="@(_openMenu == OpenMenu.Draw)" CloseMenu="@(() => _openMenu = OpenMenu.None)">
     <div class="d-flex justify-content-center flex-wrap gap-2">
         @for (byte i = 0; i < PlaceService.Colors.Count; i++)
         {
@@ -66,7 +66,7 @@
     </div>
     <div class="d-flex justify-content-center mt-2 gap-2">
         <CloseButton/>
-        <button class="btn btn-dark" disabled="@(!_canPlace && !_isAdmin)" @onclick="PlaceTile">
+        <button class="btn btn-dark" disabled="@(!_canPlace && !_isAdmin)" @onclick="@PlaceTile">
             @if (_canPlace || _isAdmin)
             {
                 <span class="oi oi-check" aria-hidden="true"></span>
@@ -283,8 +283,14 @@
         public double Y { get; set; } = Y;
     }
 
-    private async void PlaceTile()
+    private async Task PlaceTile()
     {
+        var authState = await AuthState;
+        if (authState.User.Identity?.IsAuthenticated != true)
+        {
+            NavigationManager.NavigateTo("/authentication/login", forceLoad: true);
+            return;
+        }
         if (!IsInsideCanvas) return;
         int x = PlaceService.X;
         int y = PlaceService.Y;
