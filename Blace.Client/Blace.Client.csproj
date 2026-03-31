@@ -20,7 +20,7 @@
         <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.5"/>
         <PackageReference Include="Microsoft.AspNetCore.SignalR.Client.SourceGenerator" Version="7.0.0-preview.1.22109.13"/>
         <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="10.0.5"/>
-        <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.5" />
         <PackageReference Include="Sentry.Extensions.Logging" Version="6.3.0"/>
         <!-- https://github.com/mono/SkiaSharp/issues/3422#issuecomment-3983915298 -->
         <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" Version="3.119.2"/>
