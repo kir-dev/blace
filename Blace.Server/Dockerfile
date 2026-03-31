@@ -1,4 +1,8 @@
 ﻿FROM mcr.microsoft.com/dotnet/sdk:10.0 AS publish
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip python3-venv && \
+    rm -rf /var/lib/apt/lists/*
+RUN dotnet workload install wasm-tools
 WORKDIR /src
 COPY Blace.Server/Blace.Server.csproj Blace.Server/
 COPY Blace.Shared/Blace.Shared.csproj Blace.Shared/
