@@ -15,6 +15,17 @@ public class HubClientComponent : ComponentBase, IClient, IDisposable
         base.OnInitialized();
         _hubRegistration = HubService.RegisterClient(this);
     }
+    
+    public virtual Task UpdatePixels(Pixel[] pixels) => Task.CompletedTask;
+    public virtual Task UpdatePlace(Place place) => Task.CompletedTask;
+    public virtual Task UpdateCooldown(uint cooldown) => Task.CompletedTask;
+    public virtual Task UpdatePlayerCount(int playerCount) => Task.CompletedTask;
+
+    protected Task StateHasChangedTask()
+    {
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
 
     protected virtual void Dispose(bool disposing)
     {

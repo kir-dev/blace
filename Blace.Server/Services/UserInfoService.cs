@@ -16,7 +16,7 @@ public class UserInfoService(Db db)
         Guid authSchId = context.Principal!.GetAuthSchId()!.Value;
 
         await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
-        
+
         User user = await db.Users
                         .FirstOrDefaultAsync(u => u.AuthSchId == authSchId)
                     ?? db.Users.Add(new() { AuthSchId = authSchId }).Entity;
@@ -33,6 +33,10 @@ public class UserInfoService(Db db)
             Constants.UserIdClaim,
             user.Id.ToString(CultureInfo.InvariantCulture)
         ));
-        // TODO: Add admin role
+        if (userInfo.PekActiveMemberships?.Any(m =>
+                m.PekId == 106
+                && m.Titles.All(t => !string.Equals(t, "újonc", StringComparison.InvariantCultureIgnoreCase))
+            ) ?? false)
+            identity.AddClaim(new(identity.RoleClaimType, "admin"));
     }
 }

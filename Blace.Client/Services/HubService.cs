@@ -12,9 +12,7 @@ public class HubService
     {
         _serviceProvider = serviceProvider;
         Connection = new HubConnectionBuilder()
-            .WithUrl(
-                env.BaseAddress + "Game",
-                o => o.AccessTokenProvider = () => Task.FromResult(UserId.ToString())!)
+            .WithUrl(env.BaseAddress + "Game")
             .AddMessagePackProtocol()
             .WithAutomaticReconnect()
             .Build();

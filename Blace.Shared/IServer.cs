@@ -4,7 +4,6 @@ namespace Blace.Shared;
 
 public interface IServer
 {
-    Task<Player> GetMe();
     Task<Place> GetPlace();
     Task<uint> GetCooldown();
     Task PlaceTile(int x, int y, byte color);

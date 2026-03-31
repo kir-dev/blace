@@ -1,20 +1,21 @@
 ﻿using Blace.Server.Services;
 using Blace.Shared;
 using Blace.Shared.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Blace.Server;
 
 public class Server(
-    PlayerService playerService,
-    PlaceService placeService
+    PlayerCountService playerCountService,
+    PlaceService placeService,
+    IAuthorizationService authorizationService
 )
     : Hub<IClient>, IServer
 {
     public override Task OnConnectedAsync()
     {
-        playerService[Context].IsConnected = true;
-        playerService.Update();
+        playerCountService.OnConnected(Context);
         return base.OnConnectedAsync();
     }
 
@@ -22,18 +23,18 @@ public class Server(
     {
         if (exception != null)
             SentrySdk.CaptureException(exception);
-        playerService[Context].IsConnected = false;
-        playerService.Update();
+        playerCountService.OnDisconnected(Context);
         return Task.CompletedTask;
     }
 
-    public Task<Player> GetMe() => Task.FromResult(playerService[Context]);
     public Task<Place> GetPlace() => Task.FromResult(placeService.Place);
     public Task<uint> GetCooldown() => Task.FromResult(placeService.Cooldown);
 
     public Task PlaceTile(int x, int y, byte color)
     {
-        placeService.SetPixel(x, y, color, Context.GetId());
+        if (Context.User is not { Identity.IsAuthenticated: true } user)
+            return Task.CompletedTask;
+        placeService.SetPixel(x, y, color, user.GetUserId());
         return Task.CompletedTask;
     }
 
@@ -51,15 +52,9 @@ public class Server(
 
     public async Task DeleteTiles(Tile[] tiles)
     {
-        if (playerService[Context].Id != PlaceService.AdminUserId)
+        var authorizationResult = await authorizationService.AuthorizeAsync(Context.User!, Constants.AdminPolicy);
+        if (!authorizationResult.Succeeded)
             return;
         await placeService.DeleteTiles(tiles);
-    }
-
-    public Task SetName(string name)
-    {
-        playerService[Context].Name = name;
-        playerService.Update();
-        return Task.CompletedTask;
     }
 }

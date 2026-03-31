@@ -5,14 +5,22 @@ namespace Blace.Server;
 
 public static class Extensions
 {
-    public static int GetId(this HubCallerContext context)
-        => int.Parse(context.UserIdentifier ?? throw new("UserId is null"));
-    
-    public static Guid? GetAuthSchId(this ClaimsPrincipal claimsPrincipal)
+    extension(ClaimsPrincipal claimsPrincipal)
     {
-        string? value = claimsPrincipal.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
-        if (value != null)
-            return Guid.Parse(value);
-        return null;
+        public int GetUserId()
+        {
+            string? value = claimsPrincipal.Claims.FirstOrDefault(c => c.Type == Constants.UserIdClaim)?.Value;
+            return value != null
+                ? int.Parse(value)
+                : throw new InvalidOperationException("User ID not found in claims");
+        }
+
+        public Guid? GetAuthSchId()
+        {
+            string? value = claimsPrincipal.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
+            if (value != null)
+                return Guid.Parse(value);
+            return null;
+        }
     }
 }

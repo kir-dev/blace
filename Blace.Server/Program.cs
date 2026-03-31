@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Web;
 using Microsoft.Net.Http.Headers;
 using Sentry.AspNetCore;
 using Constants = Blace.Server.Constants;
@@ -29,7 +28,7 @@ builder.Services.AddSingleton<IPlaceRepository, EfPlaceRepository>();
 
 builder.Services.AddScoped<UserInfoService>();
 builder.Services.AddSingleton<PlaceService>();
-builder.Services.AddSingleton<PlayerService>();
+builder.Services.AddSingleton<PlayerCountService>();
 builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
 builder.Services
     .AddSignalR(o => o.MaximumReceiveMessageSize = null)
@@ -107,10 +106,11 @@ builder.Services.AddOptions<OpenIdConnectOptions>(Constants.AuthSchAuthenticatio
         options.Backchannel.DefaultRequestHeaders.Add(HeaderNames.UserAgent, userAgent);
     }));
 
+builder.Services
+    .AddAuthorizationBuilder()
+    .AddPolicy(Constants.AdminPolicy, p => p.RequireRole("admin"));
 
-// TODO: AUTH
-builder.Services.AddAuthorization(o => o.AddPolicy(Constants.AdminPolicy, p => p.RequireAssertion(_ => true)));
-
+builder.Services.AddControllers();
 
 WebApplication app = builder.Build();
 
@@ -138,6 +138,7 @@ app.UseAuthorization();
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+app.MapControllers();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()

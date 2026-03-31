@@ -4,7 +4,7 @@ using SkiaSharp;
 
 namespace Blace.Client.Services;
 
-public class PlaceService : HubClient
+public class PlaceService : IClient
 {
     private readonly IServer _server;
 
@@ -49,7 +49,7 @@ public class PlaceService : HubClient
         await UpdatePlace(await _server.GetPlace());
     }
 
-    public override Task UpdatePlace(Place place)
+    public Task UpdatePlace(Place place)
     {
         if (Place?.Id != place.Id)
         {
@@ -61,7 +61,7 @@ public class PlaceService : HubClient
         return Task.CompletedTask;
     }
 
-    public override Task UpdatePixels(Pixel[] pixels)
+    public Task UpdatePixels(Pixel[] pixels)
     {
         foreach (Pixel pixel in pixels)
         {

@@ -5,22 +5,18 @@ using Timer = System.Timers.Timer;
 
 namespace Blace.Client.Services;
 
-public class CooldownService : HubClient
+public class CooldownService(
+    ILocalStorageService localStorageService,
+    HubService hubService
+)
+    : IClient
 {
-    private readonly ILocalStorageService _localStorageService;
-    private readonly IServer _server;
-    private readonly HubService _hubService;
+    private readonly IServer _server = hubService.Server;
+    private readonly HubService _hubService = hubService;
     private readonly Timer _timer = new(1000);
 
     private DateTime _lastTilePlacedTime = DateTime.UnixEpoch;
     private uint _cooldown;
-
-    public CooldownService(ILocalStorageService localStorageService, HubService hubService)
-    {
-        _localStorageService = localStorageService;
-        _hubService = hubService;
-        _server = hubService.Server;
-    }
 
     public event Action? RemainingTimeChanged;
     public TimeSpan RemainingTime => _lastTilePlacedTime.AddSeconds(_cooldown).AddMilliseconds(-50) - DateTime.UtcNow;
@@ -30,21 +26,21 @@ public class CooldownService : HubClient
         _lastTilePlacedTime = DateTime.UtcNow;
         OnTimerElapsed(null!, null!);
         _timer.Start();
-        await _localStorageService.SetItemAsync(nameof(_lastTilePlacedTime), _lastTilePlacedTime);
+        await localStorageService.SetItemAsync(nameof(_lastTilePlacedTime), _lastTilePlacedTime);
     }
 
     public async Task Initialize()
     {
-        if (await _localStorageService.ContainKeyAsync(nameof(_lastTilePlacedTime)))
-            _lastTilePlacedTime = await _localStorageService.GetItemAsync<DateTime>(nameof(_lastTilePlacedTime));
+        if (await localStorageService.ContainKeyAsync(nameof(_lastTilePlacedTime)))
+            _lastTilePlacedTime = await localStorageService.GetItemAsync<DateTime>(nameof(_lastTilePlacedTime));
 
         _cooldown = await _server.GetCooldown();
-        
+
         _timer.Elapsed += OnTimerElapsed;
         _timer.Start();
     }
 
-    public override Task UpdateCooldown(uint cooldown)
+    public Task UpdateCooldown(uint cooldown)
     {
         _cooldown = cooldown;
         RemainingTimeChanged?.Invoke();

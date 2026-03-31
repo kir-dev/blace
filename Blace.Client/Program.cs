@@ -22,7 +22,6 @@ try
     builder.Services.AddSingleton<EventService>();
     builder.Services.AddHubClientSingleton<CooldownService>();
     builder.Services.AddHubClientSingleton<PlaceService>();
-    builder.Services.AddHubClientSingleton<PlayerService>();
     builder.Services.AddBlazoredLocalStorageAsSingleton();
 
     builder.Logging.AddSentry(o => o.InitializeSdk = false);
@@ -32,7 +31,6 @@ try
     await app.Services.GetRequiredService<HubService>().Start();
 
     await Task.WhenAll(
-        app.Services.GetRequiredService<PlayerService>().Initialize(),
         app.Services.GetRequiredService<PlaceService>().Initialize(),
         app.Services.GetRequiredService<CooldownService>().Initialize()
     );

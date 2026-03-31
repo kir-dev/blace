@@ -1,0 +1,18 @@
+@inherits HubClientComponent
+
+@_playerCount
+
+@code {
+    private int? _playerCount;
+
+    public override Task UpdatePlayerCount(int playerCount)
+    {
+        if (playerCount == _playerCount)
+            return Task.CompletedTask;
+       
+        _playerCount = playerCount;
+
+        return StateHasChangedTask();
+    }
+
+}
