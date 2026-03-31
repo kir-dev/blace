@@ -151,7 +151,7 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapControllers();
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode()
+    .AddInteractiveServerRenderMode(o => o.ContentSecurityFrameAncestorsPolicy = "'self' https://client.indulasch.kir-dev.hu")
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(Blace.Client._Imports).Assembly);
 app.MapBlazorHub();

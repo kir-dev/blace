@@ -127,13 +127,6 @@ public class EfPlaceRepository(IDbContextFactory<Db> dbContextFactory) : IPlaceR
         };
         db.Deletes.Add(delete);
 
-        // Update all tiles with the delete ID (soft delete)
-        foreach (Tile tile in tiles)
-        {
-            Tile? existingTile = await db.Tiles.FindAsync(tile.Id);
-            existingTile?.DeleteId = delete.Id;
-        }
-
         await db.SaveChangesAsync();
 
         await db.Tiles
