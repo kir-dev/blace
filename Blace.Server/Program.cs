@@ -3,6 +3,7 @@ using Blace.Server.Data;
 using Blace.Server.Services;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
@@ -112,6 +113,14 @@ builder.Services
 
 builder.Services.AddControllers();
 
+// Set the requester's IP address and the original protocol using headers set by the reverse proxy
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownProxies.Clear(); // trust headers from all proxies
+    options.KnownIPNetworks.Clear();
+});
+
 WebApplication app = builder.Build();
 
 {
@@ -120,6 +129,8 @@ WebApplication app = builder.Build();
         await efPlaceRepository.Initialize();
 }
 await app.Services.GetRequiredService<PlaceService>().Initialize();
+
+app.UseForwardedHeaders();
 
 if (app.Environment.IsDevelopment())
     app.UseWebAssemblyDebugging();
