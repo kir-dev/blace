@@ -1,7 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using System.Runtime.CompilerServices;
 using Blace.Shared;
-using Blace.Shared.Models;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Blace.Server.Services;
@@ -34,8 +32,10 @@ public class PlayerCountService
             static (_, count, _) => count + 1,
             null!
         );
-        if (newConnectionCount == 1)
-            Interlocked.Increment(ref _playerCount);
+        if (newConnectionCount != 1)
+            return;
+        Interlocked.Increment(ref _playerCount);
+        Update();
     }
     
     public void OnDisconnected(HubCallerContext context)
@@ -49,7 +49,10 @@ public class PlayerCountService
             static (_, count, _) => count - 1,
             null!
         );
-        if (newConnectionCount == 0)
-            Interlocked.Decrement(ref _playerCount);
+        
+        if (newConnectionCount != 0)
+            return;
+        Interlocked.Decrement(ref _playerCount);
+        Update();
     }
 }

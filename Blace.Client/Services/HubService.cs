@@ -21,7 +21,6 @@ public class HubService
 
     private HubConnection Connection { get; }
     public IServer Server { get; }
-    public int UserId { get; private set; }
 
     public async Task Start()
     {

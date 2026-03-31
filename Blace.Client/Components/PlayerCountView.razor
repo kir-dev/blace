@@ -1,6 +1,10 @@
 @inherits HubClientComponent
 
-@_playerCount
+@if (_playerCount.HasValue)
+{
+    <span class="oi oi-person" aria-hidden="true"></span>
+    @_playerCount
+}
 
 @code {
     private int? _playerCount;
