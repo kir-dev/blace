@@ -1,6 +1,4 @@
-﻿[![thumbnail](thumbnail.webp)](https://blace.alb1.hu)
-
-# Blace 
+﻿# Blace 
 
 Reddit's r/place recreated using C#
 
