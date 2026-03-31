@@ -1,14 +1,16 @@
 using Blace.Shared.Models;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Blace.Server.Data;
 
-public class Db(DbContextOptions<Db> options) : DbContext(options)
+public class Db(DbContextOptions<Db> options) : DbContext(options), IDataProtectionKeyContext
 {
     public DbSet<Place> Places { get; set; } = null!;
     public DbSet<Tile> Tiles { get; set; } = null!;
     public DbSet<Delete> Deletes { get; set; } = null!;
     public DbSet<User> Users { get; set; } = null!;
+    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

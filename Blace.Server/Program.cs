@@ -2,6 +2,7 @@ using Blace.Server;
 using Blace.Server.Data;
 using Blace.Server.Services;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
@@ -21,6 +22,8 @@ builder.Services.AddPooledDbContextFactory<Db>(db =>
     if (builder.Environment.IsDevelopment())
         db.EnableSensitiveDataLogging();
 });
+
+builder.Services.AddDataProtection().PersistKeysToDbContext<Db>();
 
 builder.Services.AddSingleton<IPlaceRepository, EfPlaceRepository>();
 
