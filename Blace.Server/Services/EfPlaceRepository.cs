@@ -25,18 +25,7 @@ public class EfPlaceRepository(IDbContextFactory<Db> dbContextFactory) : IPlaceR
         await using Db db = await dbContextFactory.CreateDbContextAsync();
         
         Place? place = await db.Places.FindAsync(placeId);
-        if (place == null)
-        {
-            throw new InvalidOperationException($"Place with ID '{placeId}' not found.");
-        }
-
-        // Handle legacy data where Width might be 0
-        if (place.Width == 0)
-        {
-            place.Height = place.Width = 128;
-        }
-
-        return place;
+        return place ?? throw new InvalidOperationException($"Place with ID '{placeId}' not found.");
     }
 
     public async Task Save(Place place)
@@ -136,7 +125,7 @@ public class EfPlaceRepository(IDbContextFactory<Db> dbContextFactory) : IPlaceR
             DateTimeUtc = DateTime.UtcNow,
             UserId = userId,
         };
-        await db.Deletes.AddAsync(delete);
+        db.Deletes.Add(delete);
 
         // Update all tiles with the delete ID (soft delete)
         foreach (Tile tile in tiles)
@@ -147,7 +136,8 @@ public class EfPlaceRepository(IDbContextFactory<Db> dbContextFactory) : IPlaceR
 
         await db.SaveChangesAsync();
 
-        // Update the passed-in tiles to reflect the change
-        Array.ForEach(tiles, t => t.DeleteId = delete.Id);
+        await db.Tiles
+            .Where(t => tiles.Any(t2 => t2 == t))
+            .ExecuteUpdateAsync(builder => builder.SetProperty(t => t.DeleteId, delete.Id));
     }
 }

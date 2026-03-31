@@ -3,6 +3,7 @@
 @using Blace.Shared
 @using Blace.Shared.Models
 @using Blace.Client.Services
+@using Microsoft.AspNetCore.Components.Authorization
 @inherits HubClientComponent
 @inject IServer Server
 @inject CooldownService CooldownService
@@ -136,6 +137,9 @@
     private bool _canPlace;
 
     private OpenMenu _openMenu = OpenMenu.None;
+    
+    [CascadingParameter]
+    public required Task<AuthenticationState> AuthState { get; set; }
 
     protected override void OnInitialized()
     {
@@ -146,13 +150,18 @@
         }
         SelectColor(0);
 
-        _isAdmin = NavigationManager.Uri.Contains("b4f3d864-5792-4ec8-a856-ed6d1d857479");
         _isDisplay = NavigationManager.Uri.Contains("info");
         _isPreview = NavigationManager.Uri.Contains("preview");
 
         CooldownService.RemainingTimeChanged += OnRemainingTimeChanged;
         EventService.KeyDown += OnKeyDown;
         OnRemainingTimeChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthState;
+        _isAdmin = authState.User.IsInRole("admin");
     }
 
     private void OnRemainingTimeChanged()
