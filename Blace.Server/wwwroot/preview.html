@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Blace Preview</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; overflow: hidden; background: transparent; display: flex; align-items: center; justify-content: center; }
+        canvas { display: block; image-rendering: pixelated; }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@8.0.0/dist/browser/signalr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr-protocol-msgpack@8.0.0/dist/browser/signalr-protocol-msgpack.min.js"></script>
+    <script>
+        const COLORS = [
+            0xffffffff, 0xffd4d7d9, 0xff898d90, 0xff000000,
+            0xffCE2939, 0xffffa800, 0xffffff00, 0xff477050,
+            0xff7eed56, 0xff2450a4, 0xff3690ea, 0xff51e9f4,
+            0xff811e9f, 0xffb44ac0, 0xfffe70bd, 0xff9c6926
+        ];
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let imageData = null;
+        let placeWidth = 0;
+        let placeHeight = 0;
+
+        function getNibble(b, index) {
+            const isRight = index % 2;
+            const shiftIfRight = isRight * 4;
+            const shiftIfLeft = 4 - shiftIfRight;
+            return ((b >> shiftIfLeft) << shiftIfRight) >> shiftIfRight & 0xF;
+        }
+
+        function setPixel(x, y, colorIndex) {
+            const color = COLORS[colorIndex];
+            const i = (y * placeWidth + x) * 4;
+            imageData.data[i] = (color >> 16) & 0xFF;
+            imageData.data[i + 1] = (color >> 8) & 0xFF;
+            imageData.data[i + 2] = color & 0xFF;
+            imageData.data[i + 3] = 255;
+        }
+
+        function render() {
+            if (!imageData) return;
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        function resizeCanvas() {
+            if (!placeWidth || !placeHeight) return;
+            const aspectRatio = placeWidth / placeHeight;
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            let cssWidth, cssHeight;
+            if (windowWidth / windowHeight > aspectRatio) {
+                cssHeight = windowHeight;
+                cssWidth = cssHeight * aspectRatio;
+            } else {
+                cssWidth = windowWidth;
+                cssHeight = cssWidth / aspectRatio;
+            }
+            canvas.style.width = cssWidth + 'px';
+            canvas.style.height = cssHeight + 'px';
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+
+        function initCanvas(place) {
+            placeWidth = place.Width ?? place.width;
+            placeHeight = place.Height ?? place.height;
+            canvas.width = placeWidth;
+            canvas.height = placeHeight;
+            imageData = ctx.createImageData(placeWidth, placeHeight);
+
+            const canvasData = place.Canvas ?? place.canvas;
+            for (let y = 0; y < placeHeight; y++) {
+                for (let x = 0; x < placeWidth; x++) {
+                    const byteIndex = Math.floor((x + placeWidth * y) / 2);
+                    const colorIndex = getNibble(canvasData[byteIndex], x);
+                    setPixel(x, y, colorIndex);
+                }
+            }
+            resizeCanvas();
+            render();
+        }
+
+        function updatePixels(pixels) {
+            for (const p of pixels) {
+                if (Array.isArray(p)) {
+                    setPixel(p[0], p[1], p[2]);
+                } else {
+                    setPixel(p.X ?? p.x, p.Y ?? p.y, p.Color ?? p.color);
+                }
+            }
+            render();
+        }
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl('/Game')
+            .withHubProtocol(new signalR.protocols.msgpack.MessagePackHubProtocol())
+            .withAutomaticReconnect()
+            .build();
+
+        connection.on('UpdatePixels', updatePixels);
+        connection.on('UpdatePlace', initCanvas);
+
+        async function start() {
+            try {
+                await connection.start();
+                const place = await connection.invoke('GetPlace');
+                initCanvas(place);
+            } catch (err) {
+                console.error('SignalR error:', err);
+                setTimeout(start, 5000);
+            }
+        }
+
+        start();
+    </script>
+</body>
+</html>
