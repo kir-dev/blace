@@ -121,8 +121,6 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownIPNetworks.Clear();
 });
 
-builder.Services.AddHttpsRedirection(o => o.HttpsPort = 443);
-
 WebApplication app = builder.Build();
 
 {
@@ -140,7 +138,6 @@ else
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
-    app.UseHttpsRedirection();
 }
 
 app.UseStaticFiles();
